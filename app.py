@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request
 import csv
 import re
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -29,7 +29,7 @@ def clean_salary(salary_str):
 # Đọc dữ liệu từ file CSV
 def get_jobs():
     jobs = []
-    with open('jobs_data.csv', mode='r', encoding='utf-8') as file:
+    with open('jobs_data.csv', mode='r', encoding='utf-8-sig') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             title = row.get('Job Title', 'N/A')
@@ -58,10 +58,12 @@ def index():
         all_jobs = [job for job in all_jobs if search_query.lower() in job['title'].lower() or search_query.lower() in job['company'].lower()]
 
     # Sắp xếp theo mức lương
-    if sort_order == 'asc':
-        all_jobs.sort(key=lambda x: x['salary_str'], reverse=False)
-    else:
-        all_jobs.sort(key=lambda x: x['salary_str'], reverse=True)
+    def extract_salary(job):
+        salary_str = job['salary_str']
+        salary_numbers = re.findall(r'\d+', salary_str)
+        return int(''.join(salary_numbers)) if salary_numbers else 0
+
+    all_jobs.sort(key=extract_salary, reverse=(sort_order == 'desc'))
 
     no_results = len(all_jobs) == 0
 
