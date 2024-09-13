@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
-import requests
-from bs4 import BeautifulSoup
+import csv
 import re
 
 app = Flask(__name__)
@@ -27,49 +26,25 @@ def clean_salary(salary_str):
             return f"{salary} triệu VND"
     return salary_str
 
-# URL của các trang cần crawl
-urls = [
-    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&sba=1",
-    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=2&sba=1",
-    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=3&sba=1",
-    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=4&sba=1",
-    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=5&sba=1",
-    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=6&sba=1",
-
-]
-
-# Hàm để lấy dữ liệu công việc từ các trang
+# Đọc dữ liệu từ file CSV
 def get_jobs():
     jobs = []
-    for url in urls:
-        print(f"Fetching data from: {url}")  # Debugging line
-        response = requests.get(url)
-        response.encoding = response.apparent_encoding
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Tìm các phần tử công việc
-        job_listings = soup.find_all('div', class_='job-item-search-result')
-        print(f"Found {len(job_listings)} job listings")  # Debugging line
-
-        for listing in job_listings:
-            title_element = listing.find('h3', class_='title')
-            company_element = listing.find('a', class_='company')
-            salary_element = listing.find('label', class_='title-salary')
-            address_element = listing.find('label', class_='address')
-
-            title = title_element.get_text(strip=True) if title_element else "N/A"
-            company = company_element.get_text(strip=True) if company_element else "N/A"
-            salary = clean_salary(salary_element.get_text(strip=True)) if salary_element else "N/A"
-            address = address_element.get_text(strip=True) if address_element else "N/A"
-
+    with open('jobs_data.csv', mode='r', encoding='utf-8') as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            title = row.get('Job Title', 'N/A')
+            company = row.get('Company', 'N/A')
+            salary = clean_salary(row.get('Salary', 'N/A'))
+            address = row.get('Address', 'N/A')
+            
             jobs.append({
                 'title': title,
                 'company': company,
                 'salary_str': salary,
                 'address': address
             })
+    
     return jobs
-
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
