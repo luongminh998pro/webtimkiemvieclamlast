@@ -1,50 +1,75 @@
 from flask import Flask, render_template, request
-import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 import re
 
 app = Flask(__name__)
 
-# Hàm để làm sạch mức lương và chuyển đổi thành số
+# Hàm để làm sạch mức lương
 def clean_salary(salary_str):
     salary_str = salary_str.lower().replace('tới', '').strip()
     if '-' in salary_str:
         range_match = re.findall(r'\d+', salary_str)
         if len(range_match) == 2:
             low_salary, high_salary = range_match
-            return (int(low_salary), int(high_salary))
+            return f"{low_salary} - {high_salary} triệu VND"
     if '$' in salary_str:
         salary_numbers = re.findall(r'\d+', salary_str)
         if salary_numbers:
             salary = int(''.join(salary_numbers))
-            return salary
+            return f"{salary} USD"
     if 'triệu' in salary_str:
         salary_numbers = re.findall(r'\d+', salary_str)
         if salary_numbers:
             salary = int(''.join(salary_numbers))
             if salary == 0:
                 return "thỏa thuận"
-            return salary
+            return f"{salary} triệu VND"
     return salary_str
 
-# Đọc dữ liệu từ file CSV
+# URL của các trang cần crawl
+urls = [
+    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&sba=1",
+    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=2&sba=1",
+    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=3&sba=1",
+    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=4&sba=1",
+    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=5&sba=1",
+    "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-c10131?type_keyword=1&page=6&sba=1",
+
+]
+
+# Hàm để lấy dữ liệu công việc từ các trang
 def get_jobs():
-    df = pd.read_csv('jobs_data.csv')
     jobs = []
-    
-    for _, row in df.iterrows():
-        title = row['Job Title']
-        company = row['Company']
-        salary = clean_salary(row['Salary'])
-        address = row['Address']
-        
-        jobs.append({
-            'title': title,
-            'company': company,
-            'salary_str': salary,
-            'address': address
-        })
-        
+    for url in urls:
+        print(f"Fetching data from: {url}")  # Debugging line
+        response = requests.get(url)
+        response.encoding = response.apparent_encoding
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Tìm các phần tử công việc
+        job_listings = soup.find_all('div', class_='job-item-search-result')
+        print(f"Found {len(job_listings)} job listings")  # Debugging line
+
+        for listing in job_listings:
+            title_element = listing.find('h3', class_='title')
+            company_element = listing.find('a', class_='company')
+            salary_element = listing.find('label', class_='title-salary')
+            address_element = listing.find('label', class_='address')
+
+            title = title_element.get_text(strip=True) if title_element else "N/A"
+            company = company_element.get_text(strip=True) if company_element else "N/A"
+            salary = clean_salary(salary_element.get_text(strip=True)) if salary_element else "N/A"
+            address = address_element.get_text(strip=True) if address_element else "N/A"
+
+            jobs.append({
+                'title': title,
+                'company': company,
+                'salary_str': salary,
+                'address': address
+            })
     return jobs
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -59,9 +84,9 @@ def index():
 
     # Sắp xếp theo mức lương
     if sort_order == 'asc':
-        all_jobs.sort(key=lambda x: x['salary_str'] if isinstance(x['salary_str'], int) else (x['salary_str'][0] if isinstance(x['salary_str'], tuple) else 0))
+        all_jobs.sort(key=lambda x: x['salary_str'], reverse=False)
     else:
-        all_jobs.sort(key=lambda x: x['salary_str'] if isinstance(x['salary_str'], int) else (x['salary_str'][1] if isinstance(x['salary_str'], tuple) else 0), reverse=True)
+        all_jobs.sort(key=lambda x: x['salary_str'], reverse=True)
 
     no_results = len(all_jobs) == 0
 
