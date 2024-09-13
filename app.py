@@ -42,12 +42,14 @@ urls = [
 def get_jobs():
     jobs = []
     for url in urls:
+        print(f"Fetching data from: {url}")  # Debugging line
         response = requests.get(url)
         response.encoding = response.apparent_encoding
         soup = BeautifulSoup(response.text, 'html.parser')
 
         # Tìm các phần tử công việc
         job_listings = soup.find_all('div', class_='job-item-search-result')
+        print(f"Found {len(job_listings)} job listings")  # Debugging line
 
         for listing in job_listings:
             title_element = listing.find('h3', class_='title')
@@ -67,6 +69,7 @@ def get_jobs():
                 'address': address
             })
     return jobs
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
