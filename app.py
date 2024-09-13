@@ -6,6 +6,8 @@ app = Flask(__name__)
 
 # Hàm để làm sạch mức lương
 def clean_salary(salary_str):
+    if salary_str is None:
+        return "N/A"
     salary_str = salary_str.lower().replace('tới', '').strip()
     if '-' in salary_str:
         range_match = re.findall(r'\d+', salary_str)
@@ -55,7 +57,10 @@ def index():
 
     # Tìm kiếm công việc
     if search_query:
-        all_jobs = [job for job in all_jobs if search_query.lower() in job['title'].lower() or search_query.lower() in job['company'].lower()]
+        search_query_lower = search_query.lower()
+        all_jobs = [job for job in all_jobs if 
+                    (job['title'] and search_query_lower in job['title'].lower()) or 
+                    (job['company'] and search_query_lower in job['company'].lower())]
 
     # Sắp xếp theo mức lương
     def extract_salary(job):
