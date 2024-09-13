@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Listings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1>Job Listings</h1>
+        </div>
+        <div class="header-center">
+            <form method="POST">
+                <input type="text" name="search_query" placeholder="Search job title or company" value="{{ search_query }}">
+                <select name="sort_order">
+                    <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Sort by salary (high to low)</option>
+                    <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Sort by salary (low to high)</option>
+                </select>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </header>
+
+    <main>
+        {% if no_results %}
+        <p>No results found for "{{ search_query }}".</p>
+        {% else %}
+        <table>
+            <tr>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Salary</th>
+                <th>Address</th>
+            </tr>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.title }}</td>
+                <td>{{ job.company }}</td>
+                <td>{{ job.salary_str }}</td>
+                <td>{{ job.address }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Job Listings. All rights reserved.</p>
+    </footer>
+</body>
+</html>

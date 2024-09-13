@@ -1,0 +1,142 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #000; /* Đổi màu header thành đen */
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    position: sticky; /* Làm cho header cố định khi cuộn trang */
+    top: 0; /* Đặt header ở trên cùng */
+    width: 100%; /* Đảm bảo header chiếm toàn bộ chiều rộng */
+    z-index: 1000; /* Đảm bảo header luôn ở trên cùng */
+}
+
+.header-left {
+    flex: 1;
+}
+
+.header-center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.header-center form {
+    display: flex;
+    gap: 10px; /* Thêm khoảng cách giữa các phần tử trong form */
+    align-items: center;
+}
+
+input[type="text"] {
+    padding: 8px;
+    width: 250px; /* Điều chỉnh kích thước của ô tìm kiếm */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+select, button {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #5cb85c;
+    color: white;
+    cursor: pointer;
+}
+
+button {
+    background-color: #0275d8;
+    margin-left: 10px;
+}
+
+button:hover {
+    background-color: #025aa5;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #f8f8f8;
+    color: #555;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #e0e0e0;
+}
+
+footer {
+    background-color: #000; /* Đổi màu footer thành đen */
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    border-top: 1px solid #ddd;
+}
+
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .header-center {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    header h1 {
+        margin-bottom: 20px;
+    }
+
+    header form {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    input[type="text"], select, button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    select, button {
+        width: 100%;
+    }
+
+    table, th, td {
+        font-size: 14px;
+    }
+}
